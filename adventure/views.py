@@ -49,6 +49,21 @@ class CreateServiceAreaAPIView(APIView):
             status=201
         )
 
+class GetServiceAreasAPIView(generics.GenericAPIView):
+    def get(self, request):
+        service_areas = models.ServiceArea.objects.all()
+        serializer = serializers.ServiceAreaSerializer(service_areas, many=True)
+        return Response(serializer.data, status=200)
+
+class GetServiceAreasByKilometerAPIView(generics.GenericAPIView):
+    def get(self, request, kilometer):
+        try:
+            service_areas = models.ServiceArea.objects.get(kilometer=kilometer)
+            serializer = serializers.ServiceAreaSerializer(vehicle, many=True)
+            return Response(serializer.data, status=200)
+        except models.ServiceArea.DoesNotExist:
+            return Response([], status=204)
+
 class StartJourneyAPIView(generics.CreateAPIView):
     serializer_class = serializers.JourneySerializer
 
@@ -65,3 +80,18 @@ class StartJourneyAPIView(generics.CreateAPIView):
 
     def get_repository(self) -> repositories.JourneyRepository:
         return repositories.JourneyRepository()
+
+class GetVehiclesAPIView(generics.GenericAPIView):
+    def get(self, request):
+        vehicles = models.Vehicle.objects.all()
+        serializer = serializers.VehicleSerializer(vehicles, many=True)
+        return Response(serializer.data, status=200)
+
+class GetVehicleByNumberPlateAPIView(generics.GenericAPIView):
+    def get(self, request, number_plate):
+        try:
+            vehicle = models.Vehicle.objects.get(number_plate=number_plate)
+            serializer = serializers.VehicleSerializer(vehicle, many=None)
+            return Response(serializer.data, status=200)
+        except models.Vehicle.DoesNotExist:
+            return Response([], status=204)

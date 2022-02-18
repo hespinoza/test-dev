@@ -1,14 +1,13 @@
 import pytest
 from django.core import mail
 
-from adventure import models, notifiers, repositories, usecases, views
+from adventure import models, notifiers, repositories, usecases, views, serializers
 
 from .test_02_usecases import MockJourneyRepository
 
 #########
 # Tests #
 #########
-
 
 class TestRepository:
     def test_create_vehicle(self, mocker):
@@ -57,24 +56,47 @@ class TestCreateServiceAreaAPIView:
         payload = {"kilometer":60, "gas_price":784}
         response = client.post("/api/adventure/create-service-area/", payload)  
         assert response.status_code == 201
-
-@pytest.mark.skip  # Remove
+        
+@pytest.mark.django_db
 class TestGetVehicleAPIView:
     def test_get(self, client, mocker):
-        # TODO: Implement endpoint to get full list of vehicles
-        pass
+        vehicle_type = models.VehicleType(name="car")
+        mocker.patch.object(
+            models.Vehicle.objects,
+            "get",
+            return_value=models.Vehicle(
+                id=1, name="Toco", passengers=4, vehicle_type=vehicle_type
+            ),
+        )
+        response = client.get("/api/adventure/get-vehicles/")  
+        assert response.status_code == 200
     def test_get_by_license_plate(self, client, mocker):
-        # TODO: Implement endpoint to get vehicle data by license plate
-        pass
+        vehicle_type = models.VehicleType(name="car")
+        mocker.patch.object(
+            models.Vehicle.objects,
+            "get",
+            return_value=models.Vehicle(
+                id=1, name="Toco", passengers=4, vehicle_type=vehicle_type, number_plate="AB-12-34"
+            ),
+        )
+        response = client.get("/api/adventure/get-vehicles-by-number-plate/AB-12-34")
+        assert response.status_code == 200
 
-@pytest.mark.skip  # Remove
+@pytest.mark.django_db
 class TestGetServiceAreaAPIView:
     def test_get(self, client, mocker):
-        # TODO: Implement endpoint to get full list of service areas
-        pass
+        mocker.patch.object(
+            models.ServiceArea.objects,
+            "get",
+            return_value=models.ServiceArea(
+                id=1, kilometer=60, gas_price=784
+            ),
+        )
+        response = client.get("/api/adventure/get-service-areas/")  
+        assert response.status_code == 200
     def test_get_by_kilometer(self, client, mocker):
-        # TODO: Implement endpoint to get service area by kilometer
-        pass
+        response = client.get("/api/adventure/get-service-areas-by-kilometer/12")  
+        assert response.status_code == 204
 
 class TestStartJourneyAPIView:
     def test_api(self, client, mocker):

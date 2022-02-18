@@ -39,6 +39,10 @@ class Vehicle(models.Model):
             seat_distribution.append([True,False])
 
         return seat_distribution
+    
+    def validate_number_plate(self) -> bool:
+        plate_format = '^[A-Z]{2}-[0-9]{2}-[0-9]{2}$'
+        return re.match(plate_format, self.number_plate)
 
 class Journey(models.Model):
     vehicle = models.ForeignKey(Vehicle, on_delete=models.PROTECT)
@@ -54,8 +58,8 @@ class Journey(models.Model):
 class ServiceArea(models.Model):
     kilometer = models.IntegerField()
     gas_price = models.PositiveIntegerField()
-    left_station = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL)
-    right_station = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL)
+    left_station = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL, related_name='service_area_left_station')
+    right_station = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL, related_name='service_area_right_station')
 
     def validate_left(self):
         if self.left_station == None:
